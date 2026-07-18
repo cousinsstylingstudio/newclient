@@ -237,20 +237,29 @@ form.addEventListener('submit', async (e)=>{
   submitBtn.textContent = 'Sending...';
 
   const formData = new FormData(form);
-  let error = null;
+  let errorText = null;
   try{
     const response = await fetch(`https://forminit.com/f/${FORM_ID}`, {
       method: 'POST',
       body: formData
     });
-    const result = await response.json();
-    if(result && result.error) error = result.error;
+    const rawText = await response.text();
+    console.log('Forminit response status:', response.status);
+    console.log('Forminit response body:', rawText);
+
+    if(!response.ok){
+      let parsed = null;
+      try{ parsed = JSON.parse(rawText); }catch(e){}
+      errorText = (parsed && (parsed.message || (parsed.error && parsed.error.message) || parsed.error))
+        || `Request failed with status ${response.status}: ${rawText.slice(0,200)}`;
+    }
   }catch(err){
-    error = { message: "Couldn't reach Forminit, check your connection and try again." };
+    console.error('Fetch threw an error:', err);
+    errorText = "Couldn't reach Forminit at all (network or CORS block): " + err.message;
   }
 
-  if(error){
-    errorMsg.textContent = error.message || "Something went wrong sending this. Check your connection and try again.";
+  if(errorText){
+    errorMsg.textContent = errorText;
     errorMsg.classList.add('show');
     submitBtn.disabled = false;
     submitBtn.textContent = 'Send';
