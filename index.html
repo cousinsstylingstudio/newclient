@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New Lead — Black Sheep Investments</title>
+<title>Tell Us About Your Space Needs</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -25,6 +25,7 @@ body{
   border-radius:16px;
   padding:28px 24px 32px;
 }
+.brandline{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#c9932e;font-weight:700;margin-bottom:8px;}
 .title{font-family:'Fraunces',serif;font-weight:800;font-size:22px;color:#fff;margin-bottom:4px;}
 .subtitle{font-size:13px;color:#8b93a3;margin-bottom:24px;line-height:1.5;}
 label{
@@ -37,7 +38,7 @@ label{
   margin-top:18px;
 }
 label:first-of-type{margin-top:0;}
-input, select{
+input, select, textarea{
   width:100%;
   background:#1b212c;
   border:1.5px solid #2a3242;
@@ -48,15 +49,8 @@ input, select{
   outline:none;
   font-family:'DM Sans',sans-serif;
 }
-input:focus, select:focus{border-color:#c9932e;}
-.file-wrap{
-  border:1.5px dashed #2a3242;
-  border-radius:10px;
-  padding:16px;
-  text-align:center;
-  margin-top:6px;
-}
-.file-wrap input{border:none;padding:0;background:none;font-size:13px;}
+textarea{min-height:70px;resize:vertical;}
+input:focus, select:focus, textarea:focus{border-color:#c9932e;}
 .hint{font-size:11px;color:#4c5566;margin-top:5px;}
 button[type="submit"]{
   width:100%;
@@ -102,52 +96,61 @@ button[type="submit"]:active{opacity:.85;}
 
 <div class="card">
   <div id="formView">
-    <div class="title">New Lead</div>
-    <div class="subtitle">Three questions, a screenshot, and it's sent straight to Jordyn. That's it.</div>
+    <div class="title">Tell Us About Your Space Needs</div>
+    <div class="subtitle">A few quick details and we'll follow up within 24 hours to talk through your options.</div>
 
     <form id="leadForm">
-      <label>Your Name</label>
-      <select id="submittedBy" required>
+      <label>Your Full Name</label>
+      <input type="text" id="fullName" placeholder="Your full name" required>
+
+      <label>What Type of Property?</label>
+      <select id="propertyType" required>
         <option value="">Select...</option>
-        <option value="Deanna">Deanna</option>
-        <option value="Allanah">Allanah</option>
+        <option value="Residential">Residential</option>
+        <option value="Commercial">Commercial</option>
       </select>
 
-      <label>Where did you find this lead?</label>
-      <input type="text" id="source" placeholder="e.g. TikTok DM, Instagram comment, referral from..." required>
-
-      <label>Full Name (of the lead)</label>
-      <input type="text" id="fullName" placeholder="Their full name" required>
+      <label>What Are You Looking To Do?</label>
+      <select id="transactionType" required>
+        <option value="">Select property type first...</option>
+      </select>
 
       <label>Telephone Number</label>
-      <input type="tel" id="phone" placeholder="(909) 555-0100" required>
+      <input type="tel" id="phone" placeholder="(909) 555-0100" inputmode="numeric" maxlength="14" required>
 
-      <label>Best Time to Call Tomorrow</label>
-      <input type="text" id="bestTime" placeholder="e.g. Tomorrow 10am-12pm" required>
+      <label>What Are You Looking For? (optional)</label>
+      <textarea id="details" placeholder="e.g. Looking for a warehouse space in Moreno Valley, around 2,000 SF, ready to move in the next 60 days..."></textarea>
 
-      <label>Screenshot of the Lead</label>
-      <div class="file-wrap">
-        <input type="file" id="screenshot" accept="image/*" required>
-        <div class="hint">Where you found them — DM, comment, post, whatever you've got.</div>
-      </div>
+      <label>Best Day to Call You</label>
+      <input type="date" id="bestDate" required>
 
-      <button type="submit" id="submitBtn">Send to Jordyn</button>
-      <div class="error-msg" id="errorMsg">Something went wrong sending this. Check your connection and try again, or text Jordyn directly.</div>
+      <label>Best Time to Call You</label>
+      <select id="bestTimeSlot" required>
+        <option value="">Select a time...</option>
+      </select>
+
+      <label>How Did You Hear About Us? (optional)</label>
+      <input type="text" id="source" placeholder="e.g. TikTok, Instagram, a friend...">
+
+      <button type="submit" id="submitBtn">Send</button>
+      <div class="error-msg" id="errorMsg">Something went wrong sending this. Check your connection and try again.</div>
     </form>
   </div>
 
   <div class="success" id="successView">
     <div class="big">✅</div>
-    <div class="msg">Sent to Jordyn.</div>
-    <div class="sub">She'll follow up within 24 hours. Nice work.</div>
-    <button class="reset-btn" id="resetBtn">Submit Another Lead</button>
+    <div class="msg">Got it, thank you.</div>
+    <div class="sub">We'll call you at the time you picked. Talk soon.</div>
+    <button class="reset-btn" id="resetBtn">Submit Another</button>
   </div>
 </div>
 
 <script>
 // ======================================================================
 // SETUP STEP (do this once): create a free form at https://forminit.com,
-// enable file uploads, and paste your form's endpoint URL below.
+// and paste your form's endpoint URL below. You can reuse the same
+// Forminit form as the team lead capture page, or create a separate one
+// if you want client submissions tracked in their own dashboard.
 // ======================================================================
 const FORMINIT_ENDPOINT = "PASTE_YOUR_FORMINIT_ENDPOINT_URL_HERE";
 
@@ -155,12 +158,74 @@ const form = document.getElementById('leadForm');
 const submitBtn = document.getElementById('submitBtn');
 const errorMsg = document.getElementById('errorMsg');
 
+// ---- Property Type / Transaction Type: cascading dropdown ----
+const TRANSACTION_OPTIONS = {
+  Residential: ['Buy', 'Sell', 'Lease / Rent', 'Property Management'],
+  Commercial: ['Buy', 'Sell', 'Lease', 'Property Management', 'Sell My Business']
+};
+const propertyTypeSelect = document.getElementById('propertyType');
+const transactionTypeSelect = document.getElementById('transactionType');
+propertyTypeSelect.addEventListener('change', ()=>{
+  const opts = TRANSACTION_OPTIONS[propertyTypeSelect.value] || [];
+  transactionTypeSelect.innerHTML = '<option value="">Select...</option>';
+  opts.forEach(opt=>{
+    const o = document.createElement('option');
+    o.value = opt; o.textContent = opt;
+    transactionTypeSelect.appendChild(o);
+  });
+});
+
+// ---- Phone auto-formatting: (XXX) XXX-XXXX as they type ----
+const phoneInput = document.getElementById('phone');
+phoneInput.addEventListener('input', ()=>{
+  let digits = phoneInput.value.replace(/\D/g,'').slice(0,10);
+  let formatted = digits;
+  if(digits.length > 6) formatted = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  else if(digits.length > 3) formatted = `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+  else if(digits.length > 0) formatted = `(${digits}`;
+  phoneInput.value = formatted;
+});
+
+// ---- Best Day: date picker, defaults to tomorrow, can't pick today or the past ----
+const dateInput = document.getElementById('bestDate');
+const tomorrow = new Date(Date.now() + 86400000);
+const tomorrowStr = tomorrow.toISOString().slice(0,10);
+dateInput.min = tomorrowStr;
+dateInput.value = tomorrowStr;
+
+// ---- Best Time: dropdown, 30-minute slots, 8:30am to 5:30pm only ----
+const timeSelect = document.getElementById('bestTimeSlot');
+(function populateTimeSlots(){
+  const slots = [];
+  let h = 8, m = 30;
+  while(h < 17 || (h === 17 && m <= 30)){
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    const ampm = h < 12 ? 'AM' : 'PM';
+    const label = `${hour12}:${m.toString().padStart(2,'0')} ${ampm}`;
+    slots.push(label);
+    m += 30;
+    if(m >= 60){ m = 0; h += 1; }
+  }
+  slots.forEach(label=>{
+    const o = document.createElement('option');
+    o.value = label; o.textContent = label;
+    timeSelect.appendChild(o);
+  });
+})();
+
 form.addEventListener('submit', async (e)=>{
   e.preventDefault();
   errorMsg.classList.remove('show');
 
+  const digitsOnly = phoneInput.value.replace(/\D/g,'');
+  if(digitsOnly.length !== 10){
+    errorMsg.textContent = "That phone number doesn't look complete, needs all 10 digits.";
+    errorMsg.classList.add('show');
+    return;
+  }
+
   if(FORMINIT_ENDPOINT.indexOf('PASTE_YOUR') === 0){
-    errorMsg.textContent = "This form isn't wired up yet — paste your Forminit endpoint URL into the FORMINIT_ENDPOINT line in the code before sharing this link.";
+    errorMsg.textContent = "This form isn't wired up yet.";
     errorMsg.classList.add('show');
     return;
   }
@@ -168,15 +233,18 @@ form.addEventListener('submit', async (e)=>{
   submitBtn.disabled = true;
   submitBtn.textContent = 'Sending...';
 
+  const dateObj = new Date(dateInput.value + 'T00:00:00');
+  const dateLabel = dateObj.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
   const fd = new FormData();
-  fd.append('_subject', 'REAL ESTATE CRM LEADS LIVE');
-  fd.append('submitted_by', document.getElementById('submittedBy').value);
-  fd.append('source', document.getElementById('source').value);
+  fd.append('_subject', 'NEW CLIENT INQUIRY — WEBSITE FORM');
   fd.append('full_name', document.getElementById('fullName').value);
-  fd.append('phone', document.getElementById('phone').value);
-  fd.append('best_time_to_call', document.getElementById('bestTime').value);
-  const fileInput = document.getElementById('screenshot');
-  if(fileInput.files[0]) fd.append('screenshot', fileInput.files[0]);
+  fd.append('property_type', propertyTypeSelect.value);
+  fd.append('transaction_type', transactionTypeSelect.value);
+  fd.append('phone', phoneInput.value);
+  fd.append('details', document.getElementById('details').value);
+  fd.append('best_time_to_call', `${dateLabel} at ${timeSelect.value}`);
+  fd.append('source', document.getElementById('source').value);
 
   try{
     const res = await fetch(FORMINIT_ENDPOINT, {
@@ -190,14 +258,15 @@ form.addEventListener('submit', async (e)=>{
   }catch(err){
     errorMsg.classList.add('show');
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Send to Jordyn';
+    submitBtn.textContent = 'Send';
   }
 });
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   form.reset();
+  dateInput.value = tomorrowStr;
   submitBtn.disabled = false;
-  submitBtn.textContent = 'Send to Jordyn';
+  submitBtn.textContent = 'Send';
   document.getElementById('successView').classList.remove('show');
   document.getElementById('formView').style.display = 'block';
 });
