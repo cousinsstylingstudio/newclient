@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Lead — Black Sheep Investments</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:#10141b;
+  color:#eceef3;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.card{
+  width:100%;
+  max-width:480px;
+  background:#161b24;
+  border:1px solid #2a3242;
+  border-radius:16px;
+  padding:28px 24px 32px;
+}
+.title{font-family:'Fraunces',serif;font-weight:800;font-size:22px;color:#fff;margin-bottom:4px;}
+.subtitle{font-size:13px;color:#8b93a3;margin-bottom:24px;line-height:1.5;}
+label{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:#8b93a3;
+  margin-bottom:6px;
+  margin-top:18px;
+}
+label:first-of-type{margin-top:0;}
+input, select{
+  width:100%;
+  background:#1b212c;
+  border:1.5px solid #2a3242;
+  border-radius:10px;
+  padding:14px 14px;
+  font-size:16px;
+  color:#eceef3;
+  outline:none;
+  font-family:'DM Sans',sans-serif;
+}
+input:focus, select:focus{border-color:#c9932e;}
+.file-wrap{
+  border:1.5px dashed #2a3242;
+  border-radius:10px;
+  padding:16px;
+  text-align:center;
+  margin-top:6px;
+}
+.file-wrap input{border:none;padding:0;background:none;font-size:13px;}
+.hint{font-size:11px;color:#4c5566;margin-top:5px;}
+button[type="submit"]{
+  width:100%;
+  margin-top:26px;
+  background:#c9932e;
+  color:#1a1206;
+  border:none;
+  border-radius:10px;
+  padding:15px;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+button[type="submit"]:disabled{opacity:.6;}
+button[type="submit"]:active{opacity:.85;}
+.success{
+  display:none;
+  text-align:center;
+  padding:20px 0;
+}
+.success.show{display:block;}
+.success .big{font-size:32px;margin-bottom:10px;}
+.success .msg{font-size:15px;color:#eceef3;font-weight:600;margin-bottom:6px;}
+.success .sub{font-size:12.5px;color:#8b93a3;}
+.error-msg{display:none;color:#d3665e;font-size:12.5px;margin-top:14px;text-align:center;}
+.error-msg.show{display:block;}
+.reset-btn{
+  margin-top:20px;
+  background:none;
+  border:1px solid #2a3242;
+  color:#eceef3;
+  border-radius:10px;
+  padding:12px;
+  width:100%;
+  font-size:13px;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div id="formView">
+    <div class="title">New Lead</div>
+    <div class="subtitle">Three questions, a screenshot, and it's sent straight to Jordyn. That's it.</div>
+
+    <form id="leadForm">
+      <label>Your Name</label>
+      <select id="submittedBy" required>
+        <option value="">Select...</option>
+        <option value="Deanna">Deanna</option>
+        <option value="Allanah">Allanah</option>
+      </select>
+
+      <label>Where did you find this lead?</label>
+      <input type="text" id="source" placeholder="e.g. TikTok DM, Instagram comment, referral from..." required>
+
+      <label>Full Name (of the lead)</label>
+      <input type="text" id="fullName" placeholder="Their full name" required>
+
+      <label>Telephone Number</label>
+      <input type="tel" id="phone" placeholder="(909) 555-0100" required>
+
+      <label>Best Time to Call Tomorrow</label>
+      <input type="text" id="bestTime" placeholder="e.g. Tomorrow 10am-12pm" required>
+
+      <label>Screenshot of the Lead</label>
+      <div class="file-wrap">
+        <input type="file" id="screenshot" accept="image/*" required>
+        <div class="hint">Where you found them — DM, comment, post, whatever you've got.</div>
+      </div>
+
+      <button type="submit" id="submitBtn">Send to Jordyn</button>
+      <div class="error-msg" id="errorMsg">Something went wrong sending this. Check your connection and try again, or text Jordyn directly.</div>
+    </form>
+  </div>
+
+  <div class="success" id="successView">
+    <div class="big">✅</div>
+    <div class="msg">Sent to Jordyn.</div>
+    <div class="sub">She'll follow up within 24 hours. Nice work.</div>
+    <button class="reset-btn" id="resetBtn">Submit Another Lead</button>
+  </div>
+</div>
+
+<script>
+// ======================================================================
+// SETUP STEP (do this once): create a free form at https://forminit.com,
+// enable file uploads, and paste your form's endpoint URL below.
+// ======================================================================
+const FORMINIT_ENDPOINT = "PASTE_YOUR_FORMINIT_ENDPOINT_URL_HERE";
+
+const form = document.getElementById('leadForm');
+const submitBtn = document.getElementById('submitBtn');
+const errorMsg = document.getElementById('errorMsg');
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  errorMsg.classList.remove('show');
+
+  if(FORMINIT_ENDPOINT.indexOf('PASTE_YOUR') === 0){
+    errorMsg.textContent = "This form isn't wired up yet — paste your Forminit endpoint URL into the FORMINIT_ENDPOINT line in the code before sharing this link.";
+    errorMsg.classList.add('show');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending...';
+
+  const fd = new FormData();
+  fd.append('_subject', 'REAL ESTATE CRM LEADS LIVE');
+  fd.append('submitted_by', document.getElementById('submittedBy').value);
+  fd.append('source', document.getElementById('source').value);
+  fd.append('full_name', document.getElementById('fullName').value);
+  fd.append('phone', document.getElementById('phone').value);
+  fd.append('best_time_to_call', document.getElementById('bestTime').value);
+  const fileInput = document.getElementById('screenshot');
+  if(fileInput.files[0]) fd.append('screenshot', fileInput.files[0]);
+
+  try{
+    const res = await fetch(FORMINIT_ENDPOINT, {
+      method: 'POST',
+      body: fd,
+      headers: { 'Accept': 'application/json' }
+    });
+    if(!res.ok) throw new Error('Bad response');
+    document.getElementById('formView').style.display = 'none';
+    document.getElementById('successView').classList.add('show');
+  }catch(err){
+    errorMsg.classList.add('show');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send to Jordyn';
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  form.reset();
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Send to Jordyn';
+  document.getElementById('successView').classList.remove('show');
+  document.getElementById('formView').style.display = 'block';
+});
+</script>
+</body>
+</html>
