@@ -102,6 +102,9 @@ button[type="submit"]:active{opacity:.85;}
       <label>Your Full Name</label>
       <input type="text" name="fi-text-fullName" id="fullName" placeholder="Your full name" required>
 
+      <label>Email Address</label>
+      <input type="email" name="fi-email-email" id="email" placeholder="you@email.com" required>
+
       <label>What Type of Property?</label>
       <select name="fi-select-propertyType" id="propertyType" required>
         <option value="">Select...</option>
@@ -174,6 +177,12 @@ propertyTypeSelect.addEventListener('change', ()=>{
   });
 });
 
+// ---- Email validation helper ----
+const emailInput = document.getElementById('email');
+function isValidEmail(val){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+}
+
 // ---- Phone auto-formatting: (XXX) XXX-XXXX as they type ----
 const phoneInput = document.getElementById('phone');
 phoneInput.addEventListener('input', ()=>{
@@ -215,6 +224,12 @@ const timeSelect = document.getElementById('bestTimeSlot');
 form.addEventListener('submit', async (e)=>{
   e.preventDefault();
   errorMsg.classList.remove('show');
+
+  if(!isValidEmail(emailInput.value)){
+    errorMsg.textContent = "That email doesn't look right, double-check it.";
+    errorMsg.classList.add('show');
+    return;
+  }
 
   const digitsOnly = phoneInput.value.replace(/\D/g,'');
   if(digitsOnly.length !== 10){
